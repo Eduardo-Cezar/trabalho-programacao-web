@@ -42,22 +42,24 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form>
+                        <form method="POST" action="{% url 'cadastrar_prato' %}">
+                            {% csrf_token %}
+                    
                             <div class="mb-3">
-                                <label for="nomePrato" class="form-label">Nome do Prato:</label>
-                                <input type="text" class="form-control" id="nomePrato">
+                                <label for="nome" class="form-label">Nome do Prato:</label>
+                                <input type="text" class="form-control" id="nome" name="nome">
                             </div>
                             
                             <div class="mb-3">
-                                <label for="precoPrato" class="form-label">Preço (R$):</label>
-                                <input type="number" step="0.01" class="form-control" id="precoPrato">
+                                <label for="preco" class="form-label">Preço (R$):</label>
+                                <input type="number" step="0.01" class="form-control" id="preco" name="preco">
                             </div>
-
+                    
                             <div class="mb-3">
-                                <label for="ingredientesPrato" class="form-label">Ingredientes:</label>
-                                <textarea class="form-control" id="ingredientesPrato" rows="3"></textarea>
+                                <label for="ingredientes" class="form-label">Ingredientes:</label>
+                                <textarea class="form-control" id="ingredientes" name="ingredientes" rows="3"></textarea>
                             </div>
-            
+                    
                             <button type="submit" class="btn btn-primary">Cadastrar</button>
                         </form>
                     </div>
@@ -77,7 +79,75 @@
                     </tr>
                   </thead>
                 <tbody>
-                </tbody>
+                        {% for prato in pratos %}
+                            <tr>
+                                <td>{{ prato.nome }}</td>
+                                <td>
+                                    <!-- Botão para abrir o modal de edição -->
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEditarPrato{{ prato.id }}">
+                                        Editar
+                                    </button>
+                    
+                                    <!-- Modal de edição -->
+                                    <div class="modal fade" id="modalEditarPrato{{ prato.id }}" tabindex="-1" aria-labelledby="exampleModalLabel{{ prato.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="exampleModalLabel{{ prato.id }}">Editar Prato</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form method="POST" action="{% url 'editar_prato' prato.id %}">
+                                                        {% csrf_token %}
+                                                        <div class="mb-3">
+                                                            <label for="nomePrato{{ prato.id }}" class="form-label">Nome do Prato:</label>
+                                                            <input type="text" class="form-control" id="nomePrato{{ prato.id }}" name="nome" value="{{ prato.nome }}">
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label for="precoPrato{{ prato.id }}" class="form-label">Preço (R$):</label>
+                                                            <input type="number" step="0.01" class="form-control" id="precoPrato{{ prato.id }}" name="preco" value="{{ prato.preco }}">
+                                                        </div>
+                                    
+                                                        <div class="mb-3">
+                                                            <label for="ingredientesPrato{{ prato.id }}" class="form-label">Ingredientes:</label>
+                                                            <textarea class="form-control" id="ingredientesPrato{{ prato.id }}" name="ingredientes" rows="3">{{ prato.ingredientes }}</textarea>
+                                                        </div>
+                                    
+                                                        <button type="submit" class="btn btn-primary">Salvar</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalDeletar{{ prato.id }}">
+                                        Deletar
+                                    </button>
+                                    
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="modalDeletar{{ prato.id }}" tabindex="-1" aria-labelledby="modalDeletarLabel{{ prato.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="modalDeletarLabel{{ prato.id }}">Confirmar Exclusão</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Tem certeza que deseja deletar o prato "{{ prato.nome }}"?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                    <a href="{% url 'deletar_prato' prato.id %}" class="btn btn-danger">Deletar</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
               </div>
             </div>
@@ -85,61 +155,36 @@
 
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script> 
-            const form = document.querySelector('form');
-            form.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const nomePrato = document.getElementById('nomePrato').value;
-                const precoPrato = document.getElementById('precoPrato').value;
-                const ingredientesPrato = document.getElementById('ingredientesPrato').value;
-
-                if (nomePrato === '' || precoPrato === '' || ingredientesPrato === '') {
-                    alert('Por favor, preencha todos os campos.');
-                } else {
-                    // enviar dados para o servidor
+        <script>
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
                 }
-            })
-
-            const pratos = [
-                { id: 1, nome: 'Pizza Marguerita', ingredientes: 'Molho de tomate, mussarela, manjericão' },
-                { id: 2, nome: 'Lasanha', ingredientes: 'Massa, carne moída, bechamel' },
-                // ... outros pratos
-            ];
-
-            // Função para criar uma linha da tabela
-            function criarLinhaTabela(prato) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${prato.nome}</td>
-                    <td><button class="btn btn-primary btn-editar">Editar</button></td>
-                    <td><button class="btn btn-danger btn-excluir">Excluir</button></td>
-                `;
-                return row;
+                return cookieValue;
             }
 
-            // Adicionar as linhas à tabela
-            const tbody = document.querySelector('tbody');
-            pratos.forEach(prato => {
-            tbody.appendChild(criarLinhaTabela(prato));
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
             });
 
-
-            // Adicionar evento para os botões de excluir
-            document.querySelectorAll('.btn-excluir').forEach(btn => {
-                btn.addEventListener('click', () => {
-                // Implementar a lógica de exclusão aqui
-                console.log('Excluir prato');
-                });
-            });
-
-            // Adicionar evento para os botões de editar
-            document.querySelectorAll('.btn-editar').forEach(btn => {
-                btn.addEventListener('click', () => {
-                // Implementar a lógica de edição aqui
-                console.log('Editar prato');
-                });
-            });
-
-        </script>
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+    </script>
     </body>
 </html>

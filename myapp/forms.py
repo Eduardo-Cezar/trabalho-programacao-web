@@ -2,8 +2,10 @@ from django import forms
 from django.core.exceptions import ValidationError
 from .models import usuarioCliente
 from .models import usuarioAdministrador
+from .models import Prato
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
+
 
 class LoginForm(forms.Form):
     emailLogin = forms.EmailField(
@@ -90,3 +92,8 @@ class CadastroForm(forms.ModelForm):
             raise ValidationError("O telefone deve ter 11 dígitos.")
 
         return telefoneSoNumero
+    
+class PratoForm(forms.ModelForm):
+    class Meta:
+        model = Prato
+        fields = ['nome', 'preco', 'ingredientes']

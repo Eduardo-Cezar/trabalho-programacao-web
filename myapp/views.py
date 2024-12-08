@@ -9,6 +9,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from .forms import LoginForm
 from django.contrib import messages
+from .forms import PratoForm
+from django.views.decorators.csrf import csrf_protect
 
 def login(request):
     if request.method == 'POST':
@@ -54,9 +56,44 @@ def gerenciarPedido(request):
     template = loader.get_template('gerenciarPedido.html')
     return HttpResponse(template.render())
 
+@csrf_protect
+def cadastrar_prato(request):
+    if request.method == 'POST':
+        print ("É um formulario")
+        print (f"Nome do prato: {request.POST['nome']}" )
+        umPrato = Prato(nome = request.POST['nome'], preco = request.POST['preco'], ingredientes = request.POST['ingredientes'])
+        umPrato.save()
+
+    return gerenciarpratos(request)
+
+def editar_prato(request, id):
+    prato = get_object_or_404(Prato, id=id)  # Busca o prato pelo ID ou retorna 404
+
+    if request.method == 'POST':
+        prato.nome = request.POST['nome']
+        prato.preco = request.POST['preco']
+        prato.ingredientes = request.POST['ingredientes']
+        prato.save()
+
+    return gerenciarpratos(request)
+
+def deletar_prato(request, id):
+    prato = get_object_or_404(Prato, id=id)  # Busca o prato pelo ID ou retorna 404
+    prato.delete()  
+    return gerenciarpratos(request) 
+
+@csrf_protect
 def gerenciarpratos(request):
-    template = loader.get_template('gerenciarpratos.html')
-    return HttpResponse(template.render())
+    pratosList = Prato.objects.all().values()
+    #template = loader.get_template('gerenciarpratos.html')
+    context = {
+        'pratos': pratosList,
+    }
+
+
+    return render(request, 'gerenciarpratos.html', {'pratos': pratosList})
+
+
 
 def finalizarCompra(request):
     if request.method == 'POST':

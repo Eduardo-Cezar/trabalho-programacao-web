@@ -33,6 +33,9 @@ class Prato(models.Model):
     ingredientes = models.CharField(max_length=1024)
     preco = models.DecimalField(max_digits=10, decimal_places=2)
 
+    def __str__(self):
+        return self.nome
+
 class Pedido(models.Model):
     STATUS_CHOICES = [
         ('analise', 'Em Análise'),
