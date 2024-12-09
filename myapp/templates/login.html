@@ -16,7 +16,8 @@
                         <h4>Login</h4>
                     </div>
                     <div class="card-body">
-                        <form>
+                        <form method="POST">
+                            {% csrf_token %}
                             <!-- Campo de Email -->
                             <div class="mb-3">
                                 <label for="email" class="form-label">E-mail</label>

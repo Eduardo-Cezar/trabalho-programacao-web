@@ -4,53 +4,65 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from django.template import loader
 from .models import Prato, Pedido
-from .forms import CadastroForm
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from .forms import LoginForm
 from django.contrib import messages
 from .forms import PratoForm
 from django.views.decorators.csrf import csrf_protect
+from django.shortcuts import render, redirect
+
+from .forms import CadastroForm
+
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import LoginForm
 
 def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            # Recuperar os dados do formulário
-            email = form.cleaned_data['email']
-            senha = form.cleaned_data['senha']
-
-            # Tentar autenticar o usuário
+            # Acessar os dados limpos (já validados) do formulário
+            
+            email = form.cleaned_data['emailLogin']
+            senha = form.cleaned_data['senhaLogin']
+            # Tentar autenticar o usuário com dados validados
             user = authenticate(request, username=email, password=senha)
 
             if user is not None:
                 # Usuário autenticado com sucesso
                 auth_login(request, user)
-                return redirect('home')  # Redireciona para a página inicial após login, tem que mudar para a pagina do cardapio que ainda não existe
+                return redirect('gerenciarPedido')  # Redireciona para a página do cardápio
             else:
                 # E-mail ou senha incorretos
                 messages.error(request, 'E-mail ou senha incorretos.')
-
+                return redirect('cadastro')  # Redireciona de volta para a página de login
+        else:
+            # Caso o formulário não seja válido
+            messages.error(request, 'Erro ao validar o formulário.')
+            return redirect('login')  # Redireciona de volta para a página de login
     else:
         form = LoginForm()
 
     return render(request, 'login.html', {'form': form})
 
 
-
 def cadastro(request):
     if request.method == "POST":
+        # Inicializa o formulário com os dados do POST
         form = CadastroForm(request.POST)
         if form.is_valid():
-            # Salvar os dados no banco
+            # Salva os dados validados no banco
             form.save()
-
-            
-            return redirect('gerenciarPedido')   
+            return redirect('gerenciarPedido')  # Redireciona após salvar
     else:
         form = CadastroForm()
-
+        
     return render(request, 'cadastro.html', {'form': form})
+
+
 
 def gerenciarPedido(request):
     template = loader.get_template('gerenciarPedido.html')

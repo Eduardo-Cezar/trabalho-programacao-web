@@ -13,21 +13,6 @@ class usuarioCliente(models.Model):
     rua = models.CharField(max_length=255)
     numero = models.PositiveIntegerField(validators=[MaxValueValidator(99999)])
 
-    
-
-class usuarioAdministrador(models.Model):
-    email = models.EmailField(unique=True)
-    senha = models.CharField(max_length=255)
-    telefone = models.CharField(
-        max_length=11, 
-        validators=[RegexValidator(regex=r'^\d+$', message="O telefone deve conter apenas números.")]
-    )
-    bairro = models.CharField(max_length=255)
-    rua = models.CharField(max_length=255)
-    numero = models.PositiveIntegerField(validators=[MaxValueValidator(99999)]) 
-
-    
-    
 class Prato(models.Model):
     nome = models.CharField(max_length=64)
     ingredientes = models.CharField(max_length=1024)
